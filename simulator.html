@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>GSF Simulator</title>
+  <style media="screen">
+    .display-flex {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5%;
+      margin-left: 20%;
+      margin-right: 20%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="display-flex">
+    <h3> Selecte Time Speed</h1>
+      <div>
+        <h3>Run Time</h3>
+        <div style="border:1px black solid; padding:3px" id="mainwatch">
+          00:00:00
+        </div>
+      </div>
+    <select onchange="changeSpeed(this.value)">
+      <option selected disabled hidden>select an Option</option>
+      <option value="real">Real</option>
+      <option value="med" >Medium</option>
+      <option value="fast">Fast</option>
+      <option value="u_fast">Ultra Fast</option>
+    </select>
+  </div>
+  <div class="display-flex">
+    <div id="machine1" style="background-color:green; height: 100px; width:100px; ">
+
+    </div>
+
+    <div id="machine2" style="background-color:green; height: 100px; width:100px;">
+
+    </div>
+    <div id="machine3" style="background-color:green; height: 100px; width:100px;">
+
+    </div>
+    <div id="machine4" style="background-color:green; height: 100px; width:100px;">
+
+    </div>
+  </div>
+
+  <div class="display-flex">
+    <div>
+      <h3>Machine 1 Current Prod</h3>
+      <p id="m1_prod"></p>
+    </div>
+    <div class="">
+      <h3>Machine 2 Current Prod</h3>
+      <p id="m2_prod"></p>
+
+    </div>
+    <div class="">
+      <h3>Machine 3 Current Prod</h3>
+      <p id="m3_prod"></p>
+
+    </div>
+    <div class="">
+      <h3>Machine 4 Current Prod</h3>
+      <p id="m4_prod"></p>
+
+    </div>
+
+  </div>
+  <div class="display-flex">
+    <div>
+      <h3>Machine 2 Stock</h3>
+      <p id="m1_stock"></p>
+    </div>
+    <div class="">
+      <h3>Machine 3 Stock</h3>
+      <p id="m2_stock"></p>
+
+    </div>
+    <div class="">
+      <h3>Machine 4 Stock</h3>
+      <p id="m3_stock"></p>
+
+    </div>
+    <div style="max-width: 30%">
+      <h3>Final Product Stock</h3>
+      <p  id="m4_stock"></p>
+
+    </div>
+
+  </div>
+
+  <div class="display-flex">
+    <div>
+      <h3>M1 State</h3>
+      <p id="m1_state"></p>
+    </div>
+    <div>
+      <h3>M2 State</h3>
+      <p id="m2_state"></p>
+    </div>
+    <div>
+      <h3>M3 State</h3>
+      <p id="m3_state"></p>
+    </div>
+    <div>
+      <h3>M4 State</h3>
+      <p id="m4_state"></p>
+    </div>
+    <div>
+      <h3>Operator State</h3>
+      <p id="opt_state"></p>
+      <h3>Idle Time</h3>
+      <div id="stopwatch">
+        00:00:00
+      </div>
+    </div>
+
+  </div>
+
+</body>
+<script type="text/javascript">
+
+
+
+
+  var day_duration = 8 * 60;
+  //Time in minutes
+  var time_station1 = 3.594;
+  var time_station2 = 2.964;
+  var time_station3 = 3.301;
+  var time_station4 = 1.725;
+
+  var time_machine1 = 2.600;
+  var time_machine2 = 2.220;
+  var time_machine3 = 2.420;
+  var time_machine4 = 1.118;
+
+  var time_external1 = 0.994;
+  var time_external2 = 0.744;
+  var time_external3 = 0.881;
+  var time_external4 = 0.607;
+
+  var time_internal1 = 0.145;
+  var time_internal2 = 0.248;
+  var time_internal3 = 0.363;
+  var time_internal4 = 0.428;
+
+
+  // var time_external1 = 0.994/ 10 ;
+  // var time_external2 = 0.744/ 10;
+  // var time_external3 = 0.881/ 10;
+  // var time_external4 = 0.607/ 10;
+  //
+  // var time_internal1 = 0.145/ 10;
+  // var time_internal2 = 0.248/ 10;
+  // var time_internal3 = 0.363/ 10;
+  // var time_internal4 = 0.428/ 10;
+
+  // var time_external1 = 0.994/ 2;
+  // var time_external2 = 0.744/ 2;
+  // var time_external3 = 0.881/ 2;
+  // var time_external4 = 0.607/ 2;
+  //
+  // var time_internal1 = 0.145/ 2;
+  // var time_internal2 = 0.248/ 2;
+  // var time_internal3 = 0.363/ 2;
+  // var time_internal4 = 0.428/ 2;
+
+  var machine1_state = false;
+  var machine2_state = false;
+  var machine3_state = false;
+  var machine4_state = false;
+  var operator_state = false;
+  var day_on = false;
+  var time_speed = 100;
+
+  var product_count = 0;
+  var process_done = false;
+
+  var products_1 = [];
+  var products_2 = [];
+  var products_3 = [];
+  var products_final = [];
+  var myInterval;
+
+  //Set initial states on HTML
+  document.getElementById("m1_state").innerHTML = machine1_state;
+  document.getElementById("m2_state").innerHTML = machine2_state;
+  document.getElementById("m3_state").innerHTML = machine3_state;
+  document.getElementById("m4_state").innerHTML = machine4_state;
+  document.getElementById("opt_state").innerHTML = operator_state;
+
+  function changeSpeed(pace){
+    console.log(pace)
+    if(pace=="real")
+    {
+      time_speed =1000;
+    }
+    else if(pace=="med")
+    {
+      time_speed =100;
+    }
+    else if(pace=="fast")
+    {
+      time_speed =10;
+    }
+    else if(pace=="u_fast")
+    {
+      time_speed =1;
+    }
+    reset_variables();
+    dayDuration();
+    startTimer();
+    myInterval = setInterval(manager, 1);
+
+  }
+
+  function reset_variables(){
+    //reset variables
+    product_count = 0;
+    machine1_state = false;
+    machine2_state = false;
+    machine3_state = false;
+    machine4_state = false;
+    operator_state = false;
+    products_1 = [];
+    products_2 = [];
+    products_3 = [];
+    products_final = [];
+
+    //reset HTML
+    document.getElementById("machine1").style.backgroundColor = "green";
+    document.getElementById("m1_state").innerHTML = machine1_state;
+    document.getElementById("machine2").style.backgroundColor = "green";
+    document.getElementById("m2_state").innerHTML = machine2_state;
+    document.getElementById("machine3").style.backgroundColor = "green";
+    document.getElementById("m3_state").innerHTML = machine3_state;
+    document.getElementById("machine4").style.backgroundColor = "green";
+    document.getElementById("m4_state").innerHTML = machine4_state;
+    document.getElementById("opt_state").innerHTML = operator_state;
+  }
+
+  function dayDuration() {
+    startTimerMain();
+    setTimeout(stopDay, day_duration * 60 * time_speed);
+
+  }
+
+  function stopDay() {
+    process_done=true;
+    stoptime_aux = true;
+    stopTimerMain();
+    clearInterval(myInterval);
+  }
+
+  function manager() {
+
+
+    if (products_3.length > 0 && !operator_state && !machine4_state) {
+      machine4();
+    } else if (products_2.length > 0 && !operator_state && !machine3_state) {
+      machine3();
+
+    } else if (products_1.length > 0 && !operator_state && !machine2_state) {
+      machine2();
+
+    } else if (!operator_state && !machine1_state) {
+      machine1();
+    }
+
+
+  }
+
+
+
+  function freeOperator() {
+    operator_state = false;
+    if(!process_done){
+      startTimer();
+    }
+    document.getElementById("opt_state").innerHTML = operator_state;
+
+  }
+
+  function freeMachine1() {
+    machine1_state = false;
+    document.getElementById("machine1").style.backgroundColor = "green";
+    document.getElementById("m1_state").innerHTML = machine1_state;
+    product_count++;
+    products_1.unshift(product_count);
+    document.getElementById("m1_stock").innerHTML = products_1.join(" | ");
+    document.getElementById("m1_prod").innerHTML = "";
+
+  }
+
+  function freeMachine2() {
+    machine2_state = false;
+    document.getElementById("machine2").style.backgroundColor = "green";
+    document.getElementById("m2_state").innerHTML = machine2_state;
+    products_2.unshift(products_1.pop());
+    document.getElementById("m1_stock").innerHTML = products_1.join(" | ");
+    document.getElementById("m2_stock").innerHTML = products_2.join(" | ");
+    document.getElementById("m2_prod").innerHTML = "";
+
+  }
+
+  function freeMachine3() {
+    machine3_state = false;
+    document.getElementById("machine3").style.backgroundColor = "green";
+    document.getElementById("m3_state").innerHTML = machine3_state;
+    products_3.unshift(products_2.pop());
+    document.getElementById("m2_stock").innerHTML = products_2.join(" | ");
+    document.getElementById("m3_stock").innerHTML = products_3.join(" | ");
+    document.getElementById("m3_prod").innerHTML = "";
+
+  }
+
+  function freeMachine4() {
+    machine4_state = false;
+    document.getElementById("machine4").style.backgroundColor = "green";
+    document.getElementById("m4_state").innerHTML = machine4_state;
+    products_final.unshift(products_3.pop());
+    document.getElementById("m3_stock").innerHTML = products_3.join(" | ");
+    document.getElementById("m4_stock").innerHTML = products_final.join(" | ");
+    document.getElementById("m4_prod").innerHTML = "";
+
+  }
+
+  function machine1() {
+    operator_state = true;
+    stopTimer();
+    document.getElementById("opt_state").innerHTML = operator_state;
+    machine1_state = true;
+    let time_opt = (time_external1 + time_internal1) * 60 * time_speed;
+    setTimeout(freeOperator, time_opt);
+    setTimeout(freeMachine1, time_machine1 * 60 * time_speed);
+    document.getElementById("machine1").style.backgroundColor = "red";
+    document.getElementById("m1_prod").innerHTML = product_count + 1;
+
+  }
+
+
+  function machine2() {
+    operator_state = true;
+    stopTimer();
+    document.getElementById("opt_state").innerHTML = operator_state;
+    machine2_state = true;
+    let time_opt = (time_external2 + time_internal2) * 60 * time_speed;
+    setTimeout(freeOperator, time_opt);
+    setTimeout(freeMachine2, time_machine2 * 60 * time_speed);
+    document.getElementById("machine2").style.backgroundColor = "red";
+    document.getElementById("m2_prod").innerHTML = products_1[products_1.length -1];
+
+  }
+
+  function machine3() {
+    operator_state = true;
+    stopTimer();
+    document.getElementById("opt_state").innerHTML = operator_state;
+    machine3_state = true;
+    let time_opt = (time_external3 + time_internal3) * 60 * time_speed;
+    setTimeout(freeOperator, time_opt);
+    setTimeout(freeMachine3, time_machine3 * 60 * time_speed);
+    document.getElementById("machine3").style.backgroundColor = "red";
+    document.getElementById("m3_prod").innerHTML = products_2[products_2.length -1];
+
+  }
+
+  function machine4() {
+    operator_state = true;
+    stopTimer();
+    document.getElementById("opt_state").innerHTML = operator_state;
+    machine4_state = true;
+    let time_opt = (time_external4 + time_internal4) * 60 * time_speed;
+    setTimeout(freeOperator, time_opt);
+    setTimeout(freeMachine4, time_machine4 * 60 * time_speed);
+    document.getElementById("machine4").style.backgroundColor = "red";
+    document.getElementById("m4_prod").innerHTML = products_3[products_3.length -1];
+  }
+
+  // Main clock
+  const timer_main = document.getElementById('mainwatch');
+  var hr_main = 0;
+  var min_main = 0;
+  var sec_main = 0;
+  var stoptime_main = true;
+
+  function startTimerMain() {
+    if (stoptime_main == true) {
+      stoptime_main = false;
+      timerCycleMain();
+    }
+  }
+
+  function stopTimerMain() {
+    if (stoptime_main == false) {
+      stoptime_main = true;
+    }
+  }
+
+  function timerCycleMain() {
+    if (stoptime_main == false) {
+      sec_main = parseInt(sec_main);
+      min_main = parseInt(min_main);
+      hr_main = parseInt(hr_main);
+
+      sec_main = sec_main + 1;
+
+      if (sec_main == 60) {
+        min_main = min_main + 1;
+        sec_main = 0;
+      }
+      if (min_main == 60) {
+        hr_main = hr_main + 1;
+        min_main = 0;
+        sec_main = 0;
+      }
+
+      if (sec_main < 10 || sec_main == 0) {
+        sec_main = '0' + sec_main;
+      }
+      if (min_main < 10 || min_main == 0) {
+        min_main = '0' + min_main;
+      }
+      if (hr_main < 10 || hr_main == 0) {
+        hr_main = '0' + hr_main;
+      }
+
+      timer_main.innerHTML = hr_main + ':' + min_main + ':' + sec_main;
+
+      setTimeout("timerCycleMain()", time_speed);
+    }
+  }
+
+  //idle time clock
+  const timer = document.getElementById('stopwatch');
+  var hr = 0;
+  var min = 0;
+  var sec = 0;
+  var stoptime_aux = true;
+
+  function startTimer() {
+    if (stoptime_aux == true) {
+      stoptime_aux = false;
+      timerCycle();
+    }
+  }
+
+  function stopTimer() {
+    if (stoptime_aux == false) {
+      stoptime_aux = true;
+    }
+  }
+
+  function timerCycle() {
+    if (stoptime_aux == false) {
+      sec = parseInt(sec);
+      min = parseInt(min);
+      hr = parseInt(hr);
+
+      sec = sec + 1;
+
+      if (sec == 60) {
+        min = min + 1;
+        sec = 0;
+      }
+      if (min == 60) {
+        hr = hr + 1;
+        min = 0;
+        sec = 0;
+      }
+
+      if (sec < 10 || sec == 0) {
+        sec = '0' + sec;
+      }
+      if (min < 10 || min == 0) {
+        min = '0' + min;
+      }
+      if (hr < 10 || hr == 0) {
+        hr = '0' + hr;
+      }
+
+
+      timer.innerHTML = hr + ':' + min + ':' + sec;
+
+      setTimeout("timerCycle()", time_speed);
+    }
+  }
+
+
+  function resetTimer() {
+    timer.innerHTML = "00:00:00";
+    stoptime = true;
+    hr = 0;
+    sec = 0;
+    min = 0;
+  }
+</script>
+</html>
